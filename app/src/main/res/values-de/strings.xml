@@ -418,6 +418,8 @@
     <string name="scrcpy_mode_not_supported_desc">Die Bildschirmspiegelung erfordert den normalen ADB-Modus und ist nicht verfügbar, solange sich das verbundene Gerät im Modus %1$s befindet.</string>
     <string name="scrcpy_server_start_failed">Der scrcpy-Server konnte auf dem Zielgerät nicht gestartet werden. Berechtigungen oder Gerätekompatibilität prüfen.</string>
     <string name="scrcpy_server_terminated">Der scrcpy-Serverprozess auf dem Zielgerät wurde unerwartet beendet.</string>
+    <string name="scrcpy_not_supported_camera">Im Kameramodus nicht unterstützt</string>
+    <string name="scrcpy_not_supported_audio_only">Im reinen Audiomodus nicht unterstützt</string>
 
     <!-- Local ADB Detection -->
     <string name="local_adb_detected_title">Lokales ADB erkannt</string>

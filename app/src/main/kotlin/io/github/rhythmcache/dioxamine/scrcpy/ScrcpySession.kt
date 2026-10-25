@@ -37,8 +37,12 @@ class ScrcpySession(
     )
     @Volatile private var lastAppliedFromDevice: String? = null
     @Volatile private var lastSentText: String? = null
-    @Volatile var clipboardSyncEnabled: Boolean = config.clipboardSync
+    @Volatile var clipboardSyncEnabled: Boolean = config.clipboardSync && config.videoEnabled && config.videoSource != "camera"
         set(value) {
+            if (!config.videoEnabled || config.videoSource == "camera") {
+                field = false
+                return
+            }
             field = value
             if (value) {
                 setupHostClipboardSync()
@@ -213,7 +217,7 @@ class ScrcpySession(
                         setupHostClipboardSync()
                     }
 
-                    if (config.turnScreenOff) {
+                    if (config.turnScreenOff && config.videoEnabled && config.videoSource != "camera") {
                         AppLogger.i(TAG_CLIENT, "Sending SET_DISPLAY_POWER(off) via control channel")
                         control?.sendSetDisplayPower(false)
                     }
@@ -321,10 +325,12 @@ class ScrcpySession(
     }
 
     fun sendTouchEvent(action: Int, pointerId: Long, x: Float, y: Float, vw: Int, vh: Int) {
-    control?.sendTouchEvent(action, pointerId, x, y, vw, vh)
+        if (config.videoSource == "camera") return
+        control?.sendTouchEvent(action, pointerId, x, y, vw, vh)
     }
 
     fun sendKeycode(action: Int, keycode: Int) {
+        if (config.videoSource == "camera") return
         control?.sendKeycode(action, keycode)
     }
 
@@ -333,22 +339,27 @@ class ScrcpySession(
     }
 
     fun sendNavBack() {
+        if (config.videoSource == "camera") return
         control?.sendNavBack()
     }
 
     fun sendNavHome() {
+        if (config.videoSource == "camera") return
         control?.sendNavHome()
     }
 
     fun sendNavRecents() {
+        if (config.videoSource == "camera") return
         control?.sendNavRecents()
     }
 
     fun sendRotateDevice() {
+        if (config.videoSource == "camera") return
         control?.sendRotateDevice()
     }
 
     fun sendSetClipboard(text: String, paste: Boolean = false) {
+        if (config.videoSource == "camera") return
         lastSentText = text
         val now = SystemClock.uptimeMillis()
         synchronized(recentSentToDevice) {
@@ -384,7 +395,7 @@ class ScrcpySession(
     }
 
     private fun setupHostClipboardSync() {
-        if (!config.controlEnabled || clipboardListener != null) return
+        if (!config.controlEnabled || !config.videoEnabled || config.videoSource == "camera" || clipboardListener != null) return
         sessionScope.launch(Dispatchers.Main) {
             if (clipboardListener != null || !clipboardSyncEnabled) return@launch
             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return@launch
@@ -427,26 +438,32 @@ class ScrcpySession(
     }
 
     fun ensureUhidDevices() {
+        if (config.videoSource == "camera") return
         control?.ensureUhidDevices()
     }
 
     fun sendMouseMove(dx: Int, dy: Int, buttons: Int? = null) {
+        if (config.videoSource == "camera") return
         control?.sendMouseMove(dx, dy, buttons)
     }
 
     fun setMouseButtonState(buttons: Int) {
+        if (config.videoSource == "camera") return
         control?.setMouseButtonState(buttons)
     }
 
     fun clickMouseButton(buttonMask: Int) {
+        if (config.videoSource == "camera") return
         control?.clickMouseButton(buttonMask)
     }
 
     fun sendMouseScroll(wheel: Int, hPan: Int = 0) {
+        if (config.videoSource == "camera") return
         control?.sendMouseScroll(wheel, hPan)
     }
 
     override fun sendKeyStroke(hidKeyCode: Int, modifiers: Int) {
+        if (config.videoSource == "camera") return
         val ctrl = control
         if (ctrl == null) {
             AppLogger.d(TAG_CLIENT, "Dropping key stroke (control channel not connected)")
@@ -456,6 +473,7 @@ class ScrcpySession(
     }
 
     override fun sendInjectText(text: String) {
+        if (config.videoSource == "camera") return
         val ctrl = control
         if (ctrl == null) {
             AppLogger.d(TAG_CLIENT, "Dropping inject text (control channel not connected)")
@@ -482,6 +500,7 @@ class ScrcpySession(
 
         val outputFile = RecordingsManager.generateRecordingFile(context)
         val rec = ScrcpyRecorder(outputFile)
+        rec.setVideoExpected(config.videoEnabled && videoCompatible)
         rec.setAudioExpected(config.audioEnabled && audioCompatible)
         rec.prepare()
         recorder = rec
@@ -522,7 +541,7 @@ class ScrcpySession(
         sessionJob = null
         CoroutineScope(Dispatchers.IO).launch {
             runCatching { stopRecording() }
-            if (config.turnScreenOff) {
+            if (config.turnScreenOff && config.videoEnabled && config.videoSource != "camera") {
                 runCatching { control?.sendSetDisplayPower(true) }
             }
             runCatching { control?.close() }

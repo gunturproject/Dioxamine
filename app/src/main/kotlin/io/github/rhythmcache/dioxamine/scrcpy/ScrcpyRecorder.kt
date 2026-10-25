@@ -15,6 +15,7 @@ class ScrcpyRecorder(private val outputFile: File) {
     private var muxerStarted = false
     private var videoFormatSet = false
     private var audioFormatSet = false
+    private var videoExpected = true
     private var audioExpected = false
     private var muxer: MediaMuxer? = null
     
@@ -28,6 +29,13 @@ class ScrcpyRecorder(private val outputFile: File) {
     private val pendingVideoSamples = mutableListOf<PendingSample>()
     private val pendingAudioSamples = mutableListOf<PendingSample>()
     
+    fun setVideoExpected(expected: Boolean) {
+        synchronized(lock) {
+            videoExpected = expected
+            AppLogger.d("SCRCPY_CLIENT", "ScrcpyRecorder: Video expected = $expected")
+        }
+    }
+
     fun setAudioExpected(expected: Boolean) {
         synchronized(lock) {
             audioExpected = expected
@@ -129,6 +137,12 @@ class ScrcpyRecorder(private val outputFile: File) {
                 val sampleData = ByteArray(size)
                 System.arraycopy(data, offset, sampleData, 0, size)
                 pendingAudioSamples.add(PendingSample(sampleData, size, normalizedPts, 0))
+                // If video was expected but format hasn't arrived after sufficient audio samples (~1.5-3s), start with audio only
+                if (pendingAudioSamples.size >= 90 && audioFormatSet) {
+                    AppLogger.w("SCRCPY_CLIENT", "ScrcpyRecorder: Video track timeout, starting muxer with audio only")
+                    videoExpected = false
+                    tryStartMuxer()
+                }
                 return
             }
             
@@ -166,7 +180,7 @@ class ScrcpyRecorder(private val outputFile: File) {
     private fun tryStartMuxer() {
         if (muxerStarted || !isRecording) return
         
-        val readyToStart = videoFormatSet && (!audioExpected || audioFormatSet)
+        val readyToStart = (!videoExpected || videoFormatSet) && (!audioExpected || audioFormatSet) && (videoFormatSet || audioFormatSet)
         if (readyToStart) {
             runCatching {
                 muxer?.start()
@@ -174,8 +188,10 @@ class ScrcpyRecorder(private val outputFile: File) {
                 AppLogger.i("SCRCPY_CLIENT", "ScrcpyRecorder: MediaMuxer started successfully!")
                 
                 // Flush pending video samples
-                for (sample in pendingVideoSamples) {
-                    writeSampleDataInternal(videoTrackIndex, sample.data, 0, sample.size, sample.pts, sample.flags, isVideo = true)
+                if (videoTrackIndex >= 0) {
+                    for (sample in pendingVideoSamples) {
+                        writeSampleDataInternal(videoTrackIndex, sample.data, 0, sample.size, sample.pts, sample.flags, isVideo = true)
+                    }
                 }
                 pendingVideoSamples.clear()
                 

@@ -418,6 +418,8 @@
     <string name="scrcpy_mode_not_supported_desc">آینه‌کردن صفحه به حالت استاندارد ADB نیاز دارد و در وضعیت %1$s دستگاه قابل استفاده نیست.</string>
     <string name="scrcpy_server_start_failed">راه‌اندازی سرور scrcpy در دستگاه مقصد ناموفق بود. دسترسی‌ها یا سازگاری دستگاه را بررسی کنید.</string>
     <string name="scrcpy_server_terminated">فرایند سرور scrcpy در دستگاه مقصد به‌طور غیرمنتظره متوقف شد.</string>
+    <string name="scrcpy_not_supported_camera">در حالت دوربین پشتیبانی نمی‌شود</string>
+    <string name="scrcpy_not_supported_audio_only">در حالت فقط صوتی پشتیبانی نمی‌شود</string>
 
     <!-- Local ADB Detection -->
     <string name="local_adb_detected_title">ADB محلی شناسایی شد</string>

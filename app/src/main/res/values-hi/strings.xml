@@ -418,6 +418,8 @@
     <string name="scrcpy_mode_not_supported_desc">स्क्रीन मिररिंग के लिए मानक ADB मोड की आवश्यकता होती है और जब कनेक्टेड डिवाइस %1$s मोड में हो तो यह अनुपलब्ध होता है।</string>
     <string name="scrcpy_server_start_failed">लक्ष्य डिवाइस पर scrcpy सर्वर प्रारंभ करने में विफल। अनुमतियां या डिवाइस संगतता जांचें।</string>
     <string name="scrcpy_server_terminated">लक्ष्य डिवाइस पर scrcpy सर्वर प्रक्रिया अप्रत्याशित रूप से समाप्त हो गई।</string>
+    <string name="scrcpy_not_supported_camera">कैमरा मोड में समर्थित नहीं है</string>
+    <string name="scrcpy_not_supported_audio_only">केवल ऑडियो मोड में समर्थित नहीं है</string>
 
     <!-- Local ADB Detection -->
     <string name="local_adb_detected_title">स्थानीय ADB का पता चला</string>

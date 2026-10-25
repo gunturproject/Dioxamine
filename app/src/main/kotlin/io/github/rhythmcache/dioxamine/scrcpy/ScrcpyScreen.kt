@@ -184,7 +184,8 @@ fun ScrcpyScreen(
         mutableStateOf(if (isDeviceConnected) ScrcpyTab.CONFIGURATOR else ScrcpyTab.RECORDINGS)
     }
 
-    val canRecord = (!config.videoEnabled || config.videoCodec in listOf("h264", "h265")) &&
+    val canRecord = (config.videoEnabled || config.audioEnabled) &&
+            (!config.videoEnabled || config.videoCodec in listOf("h264", "h265")) &&
             (!config.audioEnabled || config.audioCodec == "aac")
 
     LaunchedEffect(isDeviceConnected) {
@@ -392,9 +393,10 @@ fun ScrcpyScreen(
             ScrcpyConfigStore.save(context, deviceKey, config)
         }
 
-        scrcpyVm.showFloatingNav = config.showFloatingNav
-        scrcpyVm.showTouchpadOverlay = config.showTouchpad
-        scrcpyVm.showKeyboard = config.showKeyboard
+        val isDisplayMode = config.videoEnabled && config.videoSource != "camera"
+        scrcpyVm.showFloatingNav = if (isDisplayMode) config.showFloatingNav else false
+        scrcpyVm.showTouchpadOverlay = if (isDisplayMode) config.showTouchpad else false
+        scrcpyVm.showKeyboard = if (isDisplayMode) config.showKeyboard else false
 
         val session = ScrcpySession(
             context = context.applicationContext,
@@ -455,32 +457,38 @@ fun ScrcpyScreen(
                             videoWidth = videoWidth,
                             videoHeight = videoHeight,
                             isFullScreen = isFullScreen,
-                            showFloatingNav = scrcpyVm.showFloatingNav,
+                            showFloatingNav = scrcpyVm.showFloatingNav && config.videoSource != "camera",
                             onToggleFloatingNav = {
-                                val next = !scrcpyVm.showFloatingNav
-                                scrcpyVm.showFloatingNav = next
-                                config = config.copy(showFloatingNav = next)
-                                if (rememberSettings && deviceKey != null) {
-                                    ScrcpyConfigStore.save(context, deviceKey, config)
+                                if (config.videoSource != "camera") {
+                                    val next = !scrcpyVm.showFloatingNav
+                                    scrcpyVm.showFloatingNav = next
+                                    config = config.copy(showFloatingNav = next)
+                                    if (rememberSettings && deviceKey != null) {
+                                        ScrcpyConfigStore.save(context, deviceKey, config)
+                                    }
                                 }
                             },
-                            showTouchpadOverlay = scrcpyVm.showTouchpadOverlay,
+                            showTouchpadOverlay = scrcpyVm.showTouchpadOverlay && config.videoSource != "camera",
                             onToggleTouchpadOverlay = {
-                                val next = !scrcpyVm.showTouchpadOverlay
-                                scrcpyVm.showTouchpadOverlay = next
-                                config = config.copy(showTouchpad = next)
-                                if (next) activeSession?.ensureUhidDevices()
-                                if (rememberSettings && deviceKey != null) {
-                                    ScrcpyConfigStore.save(context, deviceKey, config)
+                                if (config.videoSource != "camera") {
+                                    val next = !scrcpyVm.showTouchpadOverlay
+                                    scrcpyVm.showTouchpadOverlay = next
+                                    config = config.copy(showTouchpad = next)
+                                    if (next) activeSession?.ensureUhidDevices()
+                                    if (rememberSettings && deviceKey != null) {
+                                        ScrcpyConfigStore.save(context, deviceKey, config)
+                                    }
                                 }
                             },
-                            showKeyboard = scrcpyVm.showKeyboard,
+                            showKeyboard = scrcpyVm.showKeyboard && config.videoSource != "camera",
                             onToggleKeyboard = { next ->
-                                scrcpyVm.showKeyboard = next
-                                config = config.copy(showKeyboard = next)
-                                if (next) activeSession?.ensureUhidDevices()
-                                if (rememberSettings && deviceKey != null) {
-                                    ScrcpyConfigStore.save(context, deviceKey, config)
+                                if (config.videoSource != "camera") {
+                                    scrcpyVm.showKeyboard = next
+                                    config = config.copy(showKeyboard = next)
+                                    if (next) activeSession?.ensureUhidDevices()
+                                    if (rememberSettings && deviceKey != null) {
+                                        ScrcpyConfigStore.save(context, deviceKey, config)
+                                    }
                                 }
                             },
                             bindVolumeKeys = config.bindVolumeKeys,
@@ -785,31 +793,39 @@ fun ScrcpyScreen(
                                                 showTouchpadOverlay = scrcpyVm.showTouchpadOverlay,
                                                 showKeyboard = scrcpyVm.showKeyboard,
                                                 onShowFloatingNavChange = { next ->
-                                                    scrcpyVm.showFloatingNav = next
-                                                    config = config.copy(showFloatingNav = next)
-                                                    if (rememberSettings && deviceKey != null) {
-                                                        ScrcpyConfigStore.save(context, deviceKey, config)
+                                                    if (config.videoEnabled && config.videoSource != "camera") {
+                                                        scrcpyVm.showFloatingNav = next
+                                                        config = config.copy(showFloatingNav = next)
+                                                        if (rememberSettings && deviceKey != null) {
+                                                            ScrcpyConfigStore.save(context, deviceKey, config)
+                                                        }
                                                     }
                                                 },
                                                 onShowTouchpadChange = { next ->
-                                                    scrcpyVm.showTouchpadOverlay = next
-                                                    config = config.copy(showTouchpad = next)
-                                                    if (next) activeSession?.ensureUhidDevices()
-                                                    if (rememberSettings && deviceKey != null) {
-                                                        ScrcpyConfigStore.save(context, deviceKey, config)
+                                                    if (config.videoEnabled && config.videoSource != "camera") {
+                                                        scrcpyVm.showTouchpadOverlay = next
+                                                        config = config.copy(showTouchpad = next)
+                                                        if (next) activeSession?.ensureUhidDevices()
+                                                        if (rememberSettings && deviceKey != null) {
+                                                            ScrcpyConfigStore.save(context, deviceKey, config)
+                                                        }
                                                     }
                                                 },
                                                 onShowKeyboardChange = { next ->
-                                                    scrcpyVm.showKeyboard = next
-                                                    config = config.copy(showKeyboard = next)
-                                                    if (next) activeSession?.ensureUhidDevices()
-                                                    if (rememberSettings && deviceKey != null) {
-                                                        ScrcpyConfigStore.save(context, deviceKey, config)
+                                                    if (config.videoEnabled && config.videoSource != "camera") {
+                                                        scrcpyVm.showKeyboard = next
+                                                        config = config.copy(showKeyboard = next)
+                                                        if (next) activeSession?.ensureUhidDevices()
+                                                        if (rememberSettings && deviceKey != null) {
+                                                            ScrcpyConfigStore.save(context, deviceKey, config)
+                                                        }
                                                     }
                                                 },
                                                 onConfigChange = {
                                                     config = it
-                                                    activeSession?.clipboardSyncEnabled = it.clipboardSync
+                                                    if (config.videoEnabled && config.videoSource != "camera") {
+                                                        activeSession?.clipboardSyncEnabled = it.clipboardSync
+                                                    }
                                                     if (rememberSettings && deviceKey != null) {
                                                         ScrcpyConfigStore.save(context, deviceKey, it)
                                                     }
@@ -2221,7 +2237,22 @@ private fun DisplaySettings(
     onShowKeyboardChange: (Boolean) -> Unit,
     onConfigChange: (ScrcpyConfig) -> Unit
 ) {
-    Text(stringResource(R.string.section_display), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    val isCamera = config.videoSource == "camera"
+    val isAudioOnly = !config.videoEnabled
+    val isDisplaySupported = !isCamera && !isAudioOnly
+    val disabledAlpha = 0.38f
+    val unsupportedSubtitle = when {
+        isCamera -> stringResource(R.string.scrcpy_not_supported_camera)
+        isAudioOnly -> stringResource(R.string.scrcpy_not_supported_audio_only)
+        else -> ""
+    }
+
+    Text(
+        stringResource(R.string.section_display),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        color = if (!isDisplaySupported) MaterialTheme.colorScheme.onSurface.copy(alpha = disabledAlpha) else MaterialTheme.colorScheme.onSurface
+    )
     Spacer(Modifier.height(8.dp))
 
     Row(
@@ -2229,14 +2260,23 @@ private fun DisplaySettings(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val screenOffEnabled = !isMirroring && isDisplaySupported
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.display_screen_off_title), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.display_screen_off_subtitle), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                stringResource(R.string.display_screen_off_title),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (screenOffEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = disabledAlpha)
+            )
+            Text(
+                if (!isDisplaySupported) unsupportedSubtitle else stringResource(R.string.display_screen_off_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                color = if (screenOffEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = disabledAlpha)
+            )
         }
         Switch(
-            checked = config.turnScreenOff,
+            checked = config.turnScreenOff && isDisplaySupported,
             onCheckedChange = { onConfigChange(config.copy(turnScreenOff = it)) },
-            enabled = !isMirroring
+            enabled = screenOffEnabled
         )
     }
 
@@ -2247,13 +2287,23 @@ private fun DisplaySettings(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val navEnabled = isDisplaySupported
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.display_floating_nav_title), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.display_floating_nav_subtitle), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                stringResource(R.string.display_floating_nav_title),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (navEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = disabledAlpha)
+            )
+            Text(
+                if (!isDisplaySupported) unsupportedSubtitle else stringResource(R.string.display_floating_nav_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                color = if (navEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = disabledAlpha)
+            )
         }
         Switch(
-            checked = showFloatingNav,
-            onCheckedChange = { onShowFloatingNavChange(it) }
+            checked = showFloatingNav && isDisplaySupported,
+            onCheckedChange = { onShowFloatingNavChange(it) },
+            enabled = navEnabled
         )
     }
 
@@ -2264,13 +2314,23 @@ private fun DisplaySettings(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val volEnabled = isDisplaySupported
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.display_bind_volume_title), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.display_bind_volume_subtitle), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                stringResource(R.string.display_bind_volume_title),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (volEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = disabledAlpha)
+            )
+            Text(
+                if (!isDisplaySupported) unsupportedSubtitle else stringResource(R.string.display_bind_volume_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                color = if (volEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = disabledAlpha)
+            )
         }
         Switch(
-            checked = config.bindVolumeKeys,
-            onCheckedChange = { onConfigChange(config.copy(bindVolumeKeys = it)) }
+            checked = config.bindVolumeKeys && isDisplaySupported,
+            onCheckedChange = { onConfigChange(config.copy(bindVolumeKeys = it)) },
+            enabled = volEnabled
         )
     }
 
@@ -2281,13 +2341,23 @@ private fun DisplaySettings(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val clipEnabled = isDisplaySupported
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.display_clipboard_sync_title), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.display_clipboard_sync_subtitle), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                stringResource(R.string.display_clipboard_sync_title),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (clipEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = disabledAlpha)
+            )
+            Text(
+                if (!isDisplaySupported) unsupportedSubtitle else stringResource(R.string.display_clipboard_sync_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                color = if (clipEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = disabledAlpha)
+            )
         }
         Switch(
-            checked = config.clipboardSync,
-            onCheckedChange = { onConfigChange(config.copy(clipboardSync = it)) }
+            checked = config.clipboardSync && isDisplaySupported,
+            onCheckedChange = { onConfigChange(config.copy(clipboardSync = it)) },
+            enabled = clipEnabled
         )
     }
 
@@ -2298,13 +2368,23 @@ private fun DisplaySettings(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val touchpadEnabled = isDisplaySupported
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.display_touchpad_title), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.display_touchpad_subtitle), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                stringResource(R.string.display_touchpad_title),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (touchpadEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = disabledAlpha)
+            )
+            Text(
+                if (!isDisplaySupported) unsupportedSubtitle else stringResource(R.string.display_touchpad_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                color = if (touchpadEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = disabledAlpha)
+            )
         }
         Switch(
-            checked = showTouchpadOverlay,
-            onCheckedChange = { onShowTouchpadChange(it) }
+            checked = showTouchpadOverlay && isDisplaySupported,
+            onCheckedChange = { onShowTouchpadChange(it) },
+            enabled = touchpadEnabled
         )
     }
 
@@ -2315,13 +2395,23 @@ private fun DisplaySettings(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val keyboardEnabled = isDisplaySupported
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.display_keyboard_title), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.display_keyboard_subtitle), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                stringResource(R.string.display_keyboard_title),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (keyboardEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = disabledAlpha)
+            )
+            Text(
+                if (!isDisplaySupported) unsupportedSubtitle else stringResource(R.string.display_keyboard_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                color = if (keyboardEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = disabledAlpha)
+            )
         }
         Switch(
-            checked = showKeyboard,
-            onCheckedChange = { onShowKeyboardChange(it) }
+            checked = showKeyboard && isDisplaySupported,
+            onCheckedChange = { onShowKeyboardChange(it) },
+            enabled = keyboardEnabled
         )
     }
 }
@@ -2502,8 +2592,8 @@ private fun ScrcpyVideoPlayer(
     var overlayRectInRoot by remember { mutableStateOf(Rect.Zero) }
     var videoPositionInRoot by remember { mutableStateOf(Offset.Zero) }
 
-    LaunchedEffect(showTouchpadOverlay) {
-        if (showTouchpadOverlay) {
+    LaunchedEffect(showTouchpadOverlay, videoSourceIsCamera) {
+        if (showTouchpadOverlay && !videoSourceIsCamera) {
             session?.ensureUhidDevices()
         } else {
             overlayRectInRoot = Rect.Zero
@@ -2522,8 +2612,8 @@ private fun ScrcpyVideoPlayer(
         }
     }
 
-    LaunchedEffect(showKeyboard) {
-        if (showKeyboard) {
+    LaunchedEffect(showKeyboard, videoSourceIsCamera) {
+        if (showKeyboard && !videoSourceIsCamera) {
             session?.ensureUhidDevices()
             runCatching { keyboardFocusRequester.requestFocus() }
             keyboardController?.show()
@@ -2541,7 +2631,7 @@ private fun ScrcpyVideoPlayer(
             .focusRequester(focusRequester)
             .focusTarget()
             .onPreviewKeyEvent { keyEvent ->
-                if (bindVolumeKeys) {
+                if (bindVolumeKeys && !videoSourceIsCamera) {
                     val nativeEvent = keyEvent.nativeKeyEvent
                     val keyCode = nativeEvent.keyCode
                     if (keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
@@ -2642,11 +2732,11 @@ private fun ScrcpyVideoPlayer(
                     keepScreenOn = true
                     isFocusable = true
                     isFocusableInTouchMode = true
-                    if (bindVolumeKeys) {
+                    if (bindVolumeKeys && !videoSourceIsCamera) {
                         requestFocus()
                     }
                     setOnKeyListener { _, keyCode, event ->
-                        if (bindVolumeKeys && (keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+                        if (bindVolumeKeys && !videoSourceIsCamera && (keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
                                                keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
                                                keyCode == KeyEvent.KEYCODE_VOLUME_MUTE)) {
                             val action = when (event.action) {
@@ -3146,7 +3236,7 @@ private fun ScrcpyVideoPlayer(
             }
         }
 
-        if (showFloatingNav) {
+        if (showFloatingNav && !videoSourceIsCamera) {
             FloatingVerticalNavBar(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)

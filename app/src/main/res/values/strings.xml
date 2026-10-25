@@ -424,6 +424,8 @@
     <string name="scrcpy_mode_not_supported_desc">Screen mirroring requires standard ADB mode and is unavailable while the connected device is in %1$s mode.</string>
     <string name="scrcpy_server_start_failed">Scrcpy server failed to start on target device. Check permissions or device compatibility.</string>
     <string name="scrcpy_server_terminated">Scrcpy server process terminated unexpectedly on target device.</string>
+    <string name="scrcpy_not_supported_camera">Not supported in camera mode</string>
+    <string name="scrcpy_not_supported_audio_only">Not supported in audio-only mode</string>
 
     <!-- Local ADB Detection -->
     <string name="local_adb_detected_title">Local ADB Detected</string>

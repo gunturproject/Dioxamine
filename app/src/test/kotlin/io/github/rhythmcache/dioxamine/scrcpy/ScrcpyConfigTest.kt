@@ -76,4 +76,27 @@ class ScrcpyConfigTest {
         val errors = config.validate(apiLevel = 30)
         assertTrue(errors.isEmpty())
     }
+
+    @Test
+    fun testTurnScreenOff_ignoredWhenCamera() {
+        val config = ScrcpyConfig(
+            videoSource = "camera",
+            turnScreenOff = true
+        )
+        val args = config.toServerArgs()
+        assertTrue(args.contains("video_source=camera"))
+        assertFalse(args.contains("turn_screen_off=true"))
+    }
+
+    @Test
+    fun testTurnScreenOff_ignoredWhenAudioOnly() {
+        val config = ScrcpyConfig(
+            videoEnabled = false,
+            audioEnabled = true,
+            turnScreenOff = true
+        )
+        val args = config.toServerArgs()
+        assertTrue(args.contains("video=false"))
+        assertFalse(args.contains("turn_screen_off=true"))
+    }
 }

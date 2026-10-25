@@ -148,7 +148,7 @@ data class ScrcpyConfig(
             }
         }
         parts.add("control=$controlEnabled")
-        if (turnScreenOff) parts.add("turn_screen_off=true")
+        if (turnScreenOff && videoEnabled && videoSource != "camera") parts.add("turn_screen_off=true")
         return parts.joinToString(" ")
     }
 

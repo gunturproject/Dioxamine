@@ -423,6 +423,8 @@
     <string name="scrcpy_mode_not_supported_desc">Трансляция экрана требует стандартного режима ADB и недоступна, пока устройство находится в режиме %1$s.</string>
     <string name="scrcpy_server_start_failed">Не удалось запустить сервер scrcpy на целевом устройстве. Проверьте разрешения или совместимость.</string>
     <string name="scrcpy_server_terminated">Процесс сервера scrcpy неожиданно завершился на целевом устройстве.</string>
+    <string name="scrcpy_not_supported_camera">Не поддерживается в режиме камеры</string>
+    <string name="scrcpy_not_supported_audio_only">Не поддерживается в режиме только аудио</string>
 
     <!-- Local ADB Detection -->
     <string name="local_adb_detected_title">Обнаружен локальный ADB</string>
