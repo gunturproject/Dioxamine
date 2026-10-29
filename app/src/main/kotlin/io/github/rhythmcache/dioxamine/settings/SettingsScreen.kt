@@ -56,6 +56,7 @@ import io.github.rhythmcache.dioxamine.core.AppLogger
 import io.github.rhythmcache.dioxamine.core.AppReleaseInfo
 import io.github.rhythmcache.dioxamine.core.AppTheme
 import io.github.rhythmcache.dioxamine.core.DioxForegroundService
+import io.github.rhythmcache.dioxamine.core.DeviceInfoCollector
 import io.github.rhythmcache.dioxamine.core.UpdateChecker
 import io.github.rhythmcache.dioxamine.plugin.PermissionPolicy
 import io.github.rhythmcache.dioxamine.plugin.PluginManifest
@@ -189,7 +190,10 @@ fun SettingsScreen(vm: AdbViewModel) {
             runCatching {
                 context.contentResolver.openOutputStream(uri)?.use { out ->
                     ZipOutputStream(out).use { zos ->
-                        AppLogger.writePersistedLogsToZip(zos)
+                        AppLogger.writePersistedLogsToZip(
+                            zos,
+                            DeviceInfoCollector.collect(includeTargetDevice = false),
+                        )
                     }
                 }
             }.onSuccess {

@@ -146,7 +146,7 @@ object AppLogger {
     fun export(tag: String): String = export(listOf(tag))
 
     /** Write persistent logs and device_info.json directly to a ZipOutputStream without loading into memory. */
-    fun writePersistedLogsToZip(zos: ZipOutputStream, activeConn: DeviceConnection? = null) {
+    fun writePersistedLogsToZip(zos: ZipOutputStream, deviceInfoJson: String) {
         synchronized(lock) {
             writer?.flush()
             val dir = logDir ?: return
@@ -166,7 +166,7 @@ object AppLogger {
             }
 
             zos.putNextEntry(ZipEntry("device_info.json"))
-            zos.write(DeviceInfoCollector.collect(includeTargetDevice = false).toByteArray(Charsets.UTF_8))
+            zos.write(deviceInfoJson.toByteArray(Charsets.UTF_8))
             zos.closeEntry()
         }
     }

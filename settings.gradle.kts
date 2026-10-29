@@ -23,5 +23,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "Dioxamine"
 include(":app")
+include(":app-logger")
+include(":adb-kt")
+project(":adb-kt").projectDir = file("adb-kt/lib")
+include(":fastboot-kt")
+project(":fastboot-kt").projectDir = file("fastboot-kt/lib")
 include(":terminal-emulator")
 include(":terminal-view")

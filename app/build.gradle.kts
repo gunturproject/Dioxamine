@@ -136,9 +136,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.adb.kt)
-    implementation(libs.fastboot.kt)
+    implementation(project(":adb-kt"))
+    implementation(project(":fastboot-kt"))
     implementation(project(":terminal-view"))
+    implementation(project(":app-logger"))
     implementation(libs.qrose)
 
     testImplementation(libs.junit)
