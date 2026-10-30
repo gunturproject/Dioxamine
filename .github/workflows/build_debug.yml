@@ -35,7 +35,8 @@ jobs:
         run: |
           SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses > /dev/null || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;${NDK_VERSION}"
+          "$SDKMANAGER" "platform-tools" "platforms;android-37.0" "build-tools;37.0.0" "ndk;${NDK_VERSION}"
+          ln -sfn "$ANDROID_SDK_ROOT/platforms/android-37.0" "$ANDROID_SDK_ROOT/platforms/android-37"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
 
       - name: Decode release keystore

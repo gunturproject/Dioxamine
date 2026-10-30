@@ -19,7 +19,7 @@ plugins {
 
 android {
     namespace = "io.github.rhythmcache.dioxamine"
-    compileSdk = 36
+    compileSdk = 37
 
     signingConfigs {
         create("release") {
@@ -173,16 +173,16 @@ fun isWindows(): Boolean = System.getProperty("os.name").lowercase().contains("w
 /**
  * Find android.jar for the requested compileSdk.
  *
- * compileSdk = 36 can use:
+ * compileSdk = 37 can use:
  *
- *   platforms/android-36/
- *   platforms/android-36.0/
- *   platforms/android-36.1/
- *   platforms/android-36.2/
+ *   platforms/android-37/
+ *   platforms/android-37.0/
+ *   platforms/android-37.1/
+ *   platforms/android-37.2/
  *
  * The directory must actually contain android.jar.
  *
- * Exact android-36 is preferred when available.
+ * Exact android-37 is preferred when available.
  */
 fun findAndroidJar(
     sdkDir: File,
