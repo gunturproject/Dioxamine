@@ -71,11 +71,13 @@ fun AdbScreen(
                 PrimaryTabRow(selectedTabIndex = subTab) {
                     Tab(selected = subTab == 0, onClick = { subTab = 0 }, text = { Text(stringResource(R.string.adb_subtab_builtin)) })
                     Tab(selected = subTab == 1, onClick = { subTab = 1 }, text = { Text(stringResource(R.string.adb_subtab_adb_shell)) })
+                    Tab(selected = subTab == 2, onClick = { subTab = 2 }, text = { Text("webOS Root") })
                 }
 
                 when (subTab) {
                     0 -> BuiltInActionsTab(vm)
                     1 -> ShellScreen(vm)
+                    2 -> WebOsRootScreen()
                 }
             }
         }

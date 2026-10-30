@@ -19,6 +19,7 @@ ktlint            = "12.1.2"
 okio              = "3.18.1"
 bouncycastle      = "1.85"
 spake2            = "v1.0.2"
+jsch              = "0.2.21"
 
 [libraries]
 androidx-webkit                              = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
@@ -48,6 +49,7 @@ bouncycastle-pkix                        = { group = "org.bouncycastle", name = 
 bouncycastle-tls                         = { group = "org.bouncycastle", name = "bctls-jdk18on", version.ref = "bouncycastle" }
 spake2-kt                                = { group = "com.github.rhythmcache", name = "spake2-kt", version.ref = "spake2" }
 qrose                                    = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
+jsch                                     = { group = "com.github.mwiede", name = "jsch", version.ref = "jsch" }
 junit                                    = { group = "junit", name = "junit", version.ref = "junit" }
 
 [plugins]

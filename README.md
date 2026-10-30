@@ -63,6 +63,13 @@ It focuses on:
 - [Screenshot capture](https://rhythmcache.github.io/Dioxamine/book/user-guide/adb-tools/screenshots.html) — high-res screenshots pulled directly from the target frame buffer
 - [Interactive ADB shell](https://rhythmcache.github.io/Dioxamine/book/user-guide/adb-tools/terminal-shell.html)
 
+### LG webOS SSH autoroot (experimental)
+
+- Connects to an LG webOS TV over SSH using its Developer Mode private key, then uploads and runs the pinned `faultmanager-autoroot` script after explicit confirmation
+- The script is not bundled with Dioxamine; only the reviewed upstream revision matching its SHA-256 is accepted
+- This exploit can make persistent root changes. Check firmware compatibility and follow the upstream instructions, including uninstalling the LG Developer Mode app before rebooting after a successful root
+- `faultmanager-autoroot` is licensed under AGPL-3.0-or-later; see its [source repository](https://github.com/throwaway96/faultmanager-autoroot)
+
 ### Custom plugin engine
 
 - Run custom modular tools built with HTML5, CSS, and JavaScript inside a sandboxed WebView

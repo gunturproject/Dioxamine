@@ -16,6 +16,8 @@ jobs:
         variant: [debug, release]
 
     runs-on: ubuntu-latest
+    env:
+      HAS_RELEASE_SIGNING: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -33,11 +35,11 @@ jobs:
         run: |
           SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses > /dev/null || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;${NDK_VERSION}"
+          "$SDKMANAGER" "platform-tools" "platforms;android-37" "build-tools;37.0.0" "ndk;${NDK_VERSION}"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
 
       - name: Decode release keystore
-        if: matrix.variant == 'release'
+        if: matrix.variant == 'release' && env.HAS_RELEASE_SIGNING == 'true'
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
@@ -58,6 +60,7 @@ jobs:
           ./gradlew testDebugUnitTest --no-daemon
 
       - name: Build ${{ matrix.variant }} APK
+        if: matrix.variant == 'debug' || env.HAS_RELEASE_SIGNING == 'true'
         env:
           RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -71,6 +74,7 @@ jobs:
 
       - name: Rename APK with commit SHA
         id: locate
+        if: matrix.variant == 'debug' || env.HAS_RELEASE_SIGNING == 'true'
         env:
           SHORT_SHA: ${{ steps.sha.outputs.short_sha }}
           VARIANT: ${{ matrix.variant }}
@@ -86,6 +90,7 @@ jobs:
 
       - name: Upload ${{ matrix.variant }} APK
         uses: actions/upload-artifact@v4
+        if: matrix.variant == 'debug' || env.HAS_RELEASE_SIGNING == 'true'
         with:
           name: app-${{ matrix.variant }}-apk-${{ steps.sha.outputs.short_sha }}
           path: ${{ steps.locate.outputs.apk_path }}

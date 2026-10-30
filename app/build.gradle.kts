@@ -141,6 +141,7 @@ dependencies {
     implementation(project(":terminal-view"))
     implementation(project(":app-logger"))
     implementation(libs.qrose)
+    implementation(libs.jsch)
 
     testImplementation(libs.junit)
     debugImplementation(libs.androidx.compose.ui.tooling)
