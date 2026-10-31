@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lg_remote_title">Remote TV LG</string>
+    <string name="lg_remote_subtitle">Cari dan kendalikan TV webOS pada Wi-Fi lokal</string>
+    <string name="lg_remote_pairing_title">Pemasangan pertama</string>
+    <string name="lg_remote_pairing_help">Sambungkan ponsel dan TV ke jaringan yang sama, lalu aktifkan LG Connect Apps di TV. Saat pertama kali terhubung, biasanya muncul permintaan izin di layar TV; setujui menggunakan remote TV. PIN di ponsel biasanya tidak diperlukan. Dioxamine menyimpan client key yang disetujui dalam bentuk terenkripsi di perangkat ini.</string>
+    <string name="lg_remote_scan">Cari TV</string>
+    <string name="lg_remote_devices">Perangkat ditemukan</string>
+    <string name="lg_remote_unknown_renderer">Perangkat UPnP media renderer; pastikan ini TV LG Anda</string>
+    <string name="lg_remote_ip_label">IP lokal TV</string>
+    <string name="lg_remote_add_ip">Tambah IP</string>
+    <string name="lg_remote_waiting">Menunggu persetujuan TV…</string>
+    <string name="lg_remote_connect_pair">Hubungkan / Pasangkan</string>
+    <string name="lg_remote_power">Daya</string>
+    <string name="lg_remote_wol_ready">MAC Wake-on-LAN ditemukan. Untuk menyalakan TV, aktifkan Wake-on-LAN / Nyalakan melalui Wi-Fi di pengaturan TV.</string>
+    <string name="lg_remote_forget_pairing">Lupakan pemasangan</string>
+    <string name="lg_remote_forget_title">Lupakan TV ini?</string>
+    <string name="lg_remote_forget_message">Client key terenkripsi dan alamat Wake-on-LAN yang tersimpan di perangkat ini akan dihapus. Anda perlu menyetujui pemasangan di TV lagi.</string>
+    <string name="lg_remote_controls">Tombol remote</string>
+    <string name="lg_remote_ok">OK</string>
+    <string name="lg_remote_back">Kembali</string>
+    <string name="lg_remote_security_note">Dioxamine mencoba WSS aman terlebih dahulu dan memeriksa sertifikat dengan pin sertifikat LG webOS. TV lama mungkin memerlukan WebSocket tanpa enkripsi di jaringan lokal; gunakan Wi-Fi tepercaya. Menyalakan TV memakai Wake-on-LAN dan bergantung pada pengaturan TV.</string>
+</resources>

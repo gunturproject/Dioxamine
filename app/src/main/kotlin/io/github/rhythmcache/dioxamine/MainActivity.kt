@@ -31,6 +31,8 @@ import io.github.rhythmcache.dioxamine.core.*
 import io.github.rhythmcache.dioxamine.fastboot.FastbootScreen
 import io.github.rhythmcache.dioxamine.fastboot.FastbootViewModel
 import io.github.rhythmcache.dioxamine.fastboot.ListenForFastbootDevices
+import io.github.rhythmcache.dioxamine.lgremote.LgTvRemoteScreen
+import io.github.rhythmcache.dioxamine.lgremote.LgTvRemoteViewModel
 import io.github.rhythmcache.dioxamine.scrcpy.ScrcpyScreen
 import io.github.rhythmcache.dioxamine.scrcpy.ScrcpyViewModel
 import io.github.rhythmcache.dioxamine.settings.SettingsScreen
@@ -49,6 +51,7 @@ enum class Tab(@StringRes val labelRes: Int, val icon: androidx.compose.ui.graph
     ADB(R.string.tab_adb, Icons.Filled.PhoneAndroid),
     SCRCPY(R.string.tab_scrcpy, Icons.AutoMirrored.Filled.ScreenShare),
     FASTBOOT(R.string.tab_fastboot, Icons.Filled.Bolt),
+    LG_TV(R.string.tab_lg_tv, Icons.Filled.Tv),
     PLUGINS(R.string.tab_plugins, Icons.Filled.Extension),
     SETTINGS(R.string.tab_settings, Icons.Filled.Settings)
 }
@@ -136,6 +139,12 @@ fun DioxamineApp(keyDir: File) {
     })
     val fastbootVm: FastbootViewModel = viewModel()
     val scrcpyVm: ScrcpyViewModel = viewModel()
+    val lgTvVm: LgTvRemoteViewModel = viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return LgTvRemoteViewModel(context.applicationContext) as T
+        }
+    })
 
     val coroutineScope = rememberCoroutineScope()
     val pluginRepo = remember { io.github.rhythmcache.dioxamine.plugin.PluginRepository(context.applicationContext, coroutineScope) }
@@ -244,6 +253,7 @@ fun DioxamineApp(keyDir: File) {
                 Tab.ADB -> AdbScreen(vm)
                 Tab.SCRCPY -> ScrcpyScreen(vm, scrcpyVm = scrcpyVm, onFullScreenChange = { isScrcpyFullScreen = it })
                 Tab.FASTBOOT -> FastbootScreen(fastbootVm)
+                Tab.LG_TV -> LgTvRemoteScreen(lgTvVm)
                 Tab.PLUGINS -> PluginsScreen(
                     vm = vm,
                     fastbootVm = fastbootVm,

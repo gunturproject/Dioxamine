@@ -143,6 +143,7 @@ dependencies {
     implementation(project(":app-logger"))
     implementation(libs.qrose)
     implementation(libs.jsch)
+    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     debugImplementation(libs.androidx.compose.ui.tooling)

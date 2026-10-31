@@ -64,6 +64,14 @@ It focuses on:
 - [Screenshot capture](https://rhythmcache.github.io/Dioxamine/book/user-guide/adb-tools/screenshots.html) — high-res screenshots pulled directly from the target frame buffer
 - [Interactive ADB shell](https://rhythmcache.github.io/Dioxamine/book/user-guide/adb-tools/terminal-shell.html)
 
+### LG webOS TV remote
+
+- Discovers UPnP media renderers on the local network and lets you add a TV by its private IP address
+- Pairs through the standard webOS on-screen connection approval; a phone PIN is normally not required. The approved client key is encrypted with Android Keystore
+- Provides directional/OK, Back, Home, volume, mute, media, power-off, and Wake-on-LAN controls. Power-on requires Wake-on-LAN / Turn on via Wi-Fi to be enabled on the TV and a MAC address learned while paired
+- Tries secure WSS on port 3001 and checks the peer against known LG webOS certificate pins. Older models may fall back to unencrypted WebSocket on port 3000; use a trusted Wi-Fi network
+- Keep the TV and phone on the same network and enable LG Connect Apps. See the [Home Assistant webOS integration notes](https://www.home-assistant.io/integrations/webostv/) and [lgtv2 protocol client](https://github.com/hobbyquaker/lgtv2) for interoperability background
+
 ### LG webOS SSH autoroot (experimental)
 
 - Retrieves the Developer Mode private key from `http://TV_IP:9991/webos_rsa` on the local network; manual private-key selection remains available as a fallback

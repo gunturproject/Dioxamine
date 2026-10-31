@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lg_remote_title">LG TV Remote</string>
+    <string name="lg_remote_subtitle">Discover and control a webOS TV on your local Wi-Fi</string>
+    <string name="lg_remote_pairing_title">First-time pairing</string>
+    <string name="lg_remote_pairing_help">Keep your phone and TV on the same network and enable LG Connect Apps on the TV. On first connection, a permission prompt normally appears on the TV; accept it with the TV remote. A phone PIN is usually not needed. Dioxamine stores the approved client key encrypted on this device.</string>
+    <string name="lg_remote_scan">Scan for TVs</string>
+    <string name="lg_remote_devices">Devices found</string>
+    <string name="lg_remote_unknown_renderer">UPnP media renderer; confirm it is your LG TV</string>
+    <string name="lg_remote_ip_label">TV local IP</string>
+    <string name="lg_remote_add_ip">Add IP</string>
+    <string name="lg_remote_waiting">Waiting for TV approval…</string>
+    <string name="lg_remote_connect_pair">Connect / Pair</string>
+    <string name="lg_remote_power">Power</string>
+    <string name="lg_remote_wol_ready">Wake-on-LAN MAC learned. Power-on also requires Wake-on-LAN / Turn on via Wi-Fi to be enabled in TV settings.</string>
+    <string name="lg_remote_forget_pairing">Forget pairing</string>
+    <string name="lg_remote_forget_title">Forget this TV?</string>
+    <string name="lg_remote_forget_message">This removes the saved encrypted client key and Wake-on-LAN address from this device. You will need to approve pairing on the TV again.</string>
+    <string name="lg_remote_controls">Remote controls</string>
+    <string name="lg_remote_ok">OK</string>
+    <string name="lg_remote_back">Back</string>
+    <string name="lg_remote_security_note">Dioxamine tries secure WSS first and checks the TV certificate against LG webOS certificate pins. Older TVs may require unencrypted WebSocket on the local network; use a trusted Wi-Fi network. Turning the TV on uses Wake-on-LAN and depends on the TV setting.</string>
+</resources>

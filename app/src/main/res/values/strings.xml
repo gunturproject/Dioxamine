@@ -6,6 +6,7 @@
     <string name="tab_adb">ADB</string>
     <string name="tab_scrcpy">scrcpy</string>
     <string name="tab_fastboot">Fastboot</string>
+    <string name="tab_lg_tv">LG TV</string>
     <string name="tab_plugins">Plugins</string>
     <string name="tab_settings">Settings</string>
 
