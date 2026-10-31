@@ -65,10 +65,11 @@ It focuses on:
 
 ### LG webOS SSH autoroot (experimental)
 
-- Connects to an LG webOS TV over SSH using its Developer Mode private key, then uploads and runs the pinned `faultmanager-autoroot` script after explicit confirmation
-- The script is not bundled with Dioxamine; only the reviewed upstream revision matching its SHA-256 is accepted
+- Retrieves the Developer Mode private key from `http://TV_IP:9991/webos_rsa` on the local network; manual private-key selection remains available as a fallback
+- Bundles the reviewed `faultmanager-autoroot` `autoroot.sh` as the default; choosing a file is optional, and only the pinned upstream SHA-256 is accepted
+- The key endpoint uses unencrypted HTTP. Fetch only on a trusted local network; the app limits automatic retrieval to private/link-local IP addresses and asks before requesting the key
 - This exploit can make persistent root changes. Check firmware compatibility and follow the upstream instructions, including uninstalling the LG Developer Mode app before rebooting after a successful root
-- `faultmanager-autoroot` is licensed under AGPL-3.0-or-later; see its [source repository](https://github.com/throwaway96/faultmanager-autoroot)
+- `faultmanager-autoroot` is licensed under AGPL-3.0-or-later; its pinned source and license notice are included in `app/src/main/assets/webos/` and described in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 
 ### Custom plugin engine
 

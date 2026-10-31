@@ -47,8 +47,15 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.net.Inet4Address
+import java.net.Inet6Address
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.Socket
 import java.security.MessageDigest
+import java.util.Locale
 import kotlin.coroutines.resume
 
 private const val AUTOROOT_URL = "https://github.com/throwaway96/faultmanager-autoroot"
@@ -60,14 +67,18 @@ private const val REMOTE_SCRIPT = "/tmp/autoroot.sh"
 fun WebOsRootScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val defaultScript = remember(context) {
+        context.assets.open("webos/autoroot.sh").use { it.readBytes() }
+    }
     var host by remember { mutableStateOf("") }
     var port by remember { mutableStateOf("9922") }
     var username by remember { mutableStateOf("prisoner") }
     var keyPassphrase by remember { mutableStateOf("") }
     var privateKey by remember { mutableStateOf<ByteArray?>(null) }
     var privateKeyName by remember { mutableStateOf<String?>(null) }
-    var scriptBytes by remember { mutableStateOf<ByteArray?>(null) }
-    var scriptHash by remember { mutableStateOf<String?>(null) }
+    var scriptBytes by remember { mutableStateOf<ByteArray?>(defaultScript) }
+    var scriptHash by remember { mutableStateOf<String?>(sha256(defaultScript)) }
+    var scriptName by remember { mutableStateOf("autoroot.sh (bawaan)") }
     var debug by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var output by remember { mutableStateOf("") }
@@ -75,6 +86,7 @@ fun WebOsRootScreen() {
     var pendingHostKey by remember { mutableStateOf<String?>(null) }
     var hostKeyDecision by remember { mutableStateOf<((Boolean) -> Unit)?>(null) }
     var showRunConfirmation by remember { mutableStateOf(false) }
+    var showKeyFetchConfirmation by remember { mutableStateOf(false) }
 
     val scriptPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         if (uri != null) {
@@ -85,8 +97,10 @@ fun WebOsRootScreen() {
                             ?: kotlin.error("Tidak dapat membaca file yang dipilih")
                     }
                     val digest = sha256(selected)
+                    scriptBytes?.takeIf { it !== defaultScript }?.fill(0)
                     scriptBytes = selected
                     scriptHash = digest
+                    scriptName = uri.lastPathSegment?.substringAfterLast('/') ?: "autoroot.sh"
                     output = if (digest == AUTOROOT_SHA256) {
                         "Skrip cocok dengan revisi upstream yang dipin."
                     } else {
@@ -110,6 +124,7 @@ fun WebOsRootScreen() {
                     require(bytes.size <= 128 * 1024) { "File key terlalu besar; pilih private key PEM/OpenSSH." }
                     val text = bytes.toString(Charsets.UTF_8)
                     require(text.contains("PRIVATE KEY-----")) { "Format tidak didukung. Pilih private key PEM/OpenSSH, bukan file .pub atau .ppk." }
+                    privateKey?.fill(0)
                     privateKey = bytes
                     privateKeyName = uri.lastPathSegment?.substringAfterLast('/') ?: "private key"
                 } catch (e: Exception) {
@@ -129,7 +144,7 @@ fun WebOsRootScreen() {
                 Text("Peringatan penting", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
                 Text("Fitur ini mengirim skrip pihak ketiga melalui SSH dan menjalankan eksploit yang mengubah perangkat TV secara persisten. Gunakan hanya pada TV milik Anda atau yang Anda berwenang kelola.")
                 Text("Periksa kerentanan firmware TV terlebih dahulu di CanI.RootMy.TV. Firmware terbaru sebagian besar telah dipatch. Jangan reboot setelah berhasil sebelum menghapus aplikasi LG Developer Mode; jangan pasang Developer Mode lagi selama TV rooted.")
-                Text("Proyek faultmanager-autoroot berlisensi AGPL-3.0-or-later. Skrip tidak dibundel dengan Dioxamine; pilih sendiri file dari repositori resmi dan hash harus sama dengan revisi yang ditinjau.")
+                Text("autoroot.sh dari faultmanager-autoroot disertakan sebagai skrip default pinned. Skrip lain boleh dipilih secara opsional, tetapi hanya revisi yang sama persis dan cocok SHA-256 yang dapat dijalankan. Lisensi AGPL-3.0-or-later disertakan bersama asset.")
                 TextButton(onClick = {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AUTOROOT_URL)))
                 }) { Text("Buka repositori dan instruksi resmi") }
@@ -141,24 +156,55 @@ fun WebOsRootScreen() {
             }
         }
 
-        OutlinedTextField(host, { host = it }, label = { Text("Alamat IP / hostname TV") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        OutlinedTextField(
+            host,
+            {
+                if (host != it) {
+                    privateKey?.fill(0)
+                    privateKey = null
+                    privateKeyName = null
+                    keyPassphrase = ""
+                }
+                host = it
+            },
+            label = { Text("Alamat IP TV") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(port, { port = it.filter(Char::isDigit).take(5) }, label = { Text("Port SSH") }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
             OutlinedTextField(username, { username = it }, label = { Text("Username") }, modifier = Modifier.weight(1f), singleLine = true)
         }
-        Text("LG Developer Mode memakai SSH key, bukan kata sandi akun. Aktifkan Key Server, ambil private key melalui ares-novacom --getkey, lalu pilih file private key di bawah. User/port default: prisoner:9922.")
-        Button(onClick = { keyPicker.launch(arrayOf("*/*")) }, enabled = !busy) {
-            Text(privateKeyName?.let { "Private key: $it" } ?: "Pilih private key webOS")
+        Text("Aktifkan Developer Mode dan Key Server di TV. Tekan tombol untuk mengambil key otomatis dari http://IP_TV:9991/webos_rsa. User/port SSH default: prisoner:9922.")
+        Button(onClick = { showKeyFetchConfirmation = true }, enabled = !busy && host.isNotBlank()) {
+            Text(privateKeyName?.let { "Ambil ulang key · saat ini: $it" } ?: "Ambil private key otomatis dari TV")
+        }
+        TextButton(onClick = { keyPicker.launch(arrayOf("*/*")) }, enabled = !busy) {
+            Text("Atau pilih file private key secara manual (opsional)")
         }
         OutlinedTextField(keyPassphrase, { keyPassphrase = it }, label = { Text("Passphrase private key (jika diminta)") }, modifier = Modifier.fillMaxWidth(), singleLine = true, visualTransformation = PasswordVisualTransformation())
         Text("Private key dan passphrase hanya digunakan untuk koneksi ini; tidak disimpan oleh fitur.", style = MaterialTheme.typography.bodySmall)
 
-        Button(onClick = { scriptPicker.launch(arrayOf("*/*")) }, enabled = !busy) {
-            Text(if (scriptHash == null) "Pilih autoroot.sh" else "Pilih ulang autoroot.sh")
+        Text("Skrip aktif: $scriptName", style = MaterialTheme.typography.bodyMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = { scriptPicker.launch(arrayOf("*/*")) }, enabled = !busy) {
+                Text("Pilih autoroot.sh lain (opsional)")
+            }
+            TextButton(
+                onClick = {
+                    scriptBytes?.takeIf { it !== defaultScript }?.fill(0)
+                    scriptBytes = defaultScript
+                    scriptHash = sha256(defaultScript)
+                    scriptName = "autoroot.sh (bawaan)"
+                },
+                enabled = !busy && scriptBytes !== defaultScript,
+            ) {
+                Text("Gunakan bawaan")
+            }
         }
         Text(
             when {
-                scriptHash == null -> "Belum ada skrip dipilih. Unduh revisi yang ditinjau dari repositori resmi."
+                scriptHash == null -> "Skrip belum tersedia."
                 scriptHash == AUTOROOT_SHA256 -> "Hash cocok — skrip tervalidasi untuk revisi pinned."
                 else -> "Hash tidak cocok — eksekusi dinonaktifkan."
             },
@@ -181,6 +227,39 @@ fun WebOsRootScreen() {
             }
         }
         Spacer(Modifier.height(12.dp))
+    }
+
+    if (showKeyFetchConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showKeyFetchConfirmation = false },
+            title = { Text("Ambil Developer Mode private key?") },
+            text = {
+                Text(
+                    "Dioxamine akan meminta http://${host.trim()}:9991/webos_rsa melalui HTTP tanpa enkripsi. Private key dapat terlihat oleh perangkat lain di jaringan Wi-Fi/LAN. Lanjutkan hanya pada jaringan tepercaya dan saat TV milik Anda menyalakan Key Server. Key hanya disimpan sementara di memori aplikasi.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showKeyFetchConfirmation = false
+                    busy = true
+                    output = "Mengambil key dari TV melalui port 9991…\n"
+                    scope.launch {
+                        try {
+                            val fetched = withContext(Dispatchers.IO) { fetchWebOsPrivateKey(host.trim()) }
+                            privateKey?.fill(0)
+                            privateKey = fetched
+                            privateKeyName = "key dari TV (${host.trim()})"
+                            output += "Private key berhasil diambil dan belum ditulis ke penyimpanan. Masukkan passphrase Developer Mode jika diminta.\n"
+                        } catch (e: Exception) {
+                            error = e.message ?: "Gagal mengambil private key dari TV"
+                        } finally {
+                            busy = false
+                        }
+                    }
+                }) { Text("Ambil key") }
+            },
+            dismissButton = { TextButton(onClick = { showKeyFetchConfirmation = false }) { Text("Batal") } },
+        )
     }
 
     if (showRunConfirmation) {
@@ -331,3 +410,117 @@ private suspend fun uploadAndRun(
 private fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")
     .digest(bytes)
     .joinToString("") { "%02x".format(it) }
+
+private fun fetchWebOsPrivateKey(ipInput: String): ByteArray {
+    val ip = ipInput.trim().removePrefix("[").removeSuffix("]")
+    require(ip.matches(Regex("[0-9a-fA-F:.]+")) && (ip.contains('.') || ip.contains(':'))) {
+        "Masukkan IP literal TV, bukan hostname atau URL."
+    }
+    val address = InetAddress.getByName(ip)
+    val isPrivateLanAddress = when (address) {
+        is Inet4Address -> address.isSiteLocalAddress
+        is Inet6Address -> address.isLinkLocalAddress ||
+            (address.address[0].toInt() and 0xfe) == 0xfc
+        else -> false
+    }
+    require(isPrivateLanAddress && !address.isAnyLocalAddress && !address.isLoopbackAddress && !address.isMulticastAddress) {
+        "Key hanya dapat diambil dari alamat IP privat/link-local TV di jaringan lokal."
+    }
+
+    val response = ByteArrayOutputStream()
+    Socket().use { socket ->
+        socket.connect(InetSocketAddress(address, 9991), 5_000)
+        socket.soTimeout = 8_000
+        val hostHeader = if (address is Inet6Address) "[${address.hostAddress.substringBefore('%')}]" else address.hostAddress
+        socket.getOutputStream().write(
+            "GET /webos_rsa HTTP/1.1\r\nHost: $hostHeader:9991\r\nAccept: application/octet-stream, text/plain\r\nConnection: close\r\nUser-Agent: Dioxamine-webOS\r\n\r\n"
+                .toByteArray(Charsets.US_ASCII),
+        )
+        val buffer = ByteArray(4096)
+        while (true) {
+            val count = socket.getInputStream().read(buffer)
+            if (count < 0) break
+            require(response.size() + count <= 160 * 1024) { "Respons key terlalu besar; koneksi dihentikan." }
+            response.write(buffer, 0, count)
+        }
+    }
+
+    val raw = response.toByteArray()
+    val separator = byteArrayOf(13, 10, 13, 10)
+    val headerEnd = raw.indexOfSequence(separator)
+    require(headerEnd in 1..8192) { "Respons Key Server tidak valid atau header terlalu besar." }
+    val headerText = raw.copyOfRange(0, headerEnd).toString(Charsets.ISO_8859_1)
+    val status = headerText.lineSequence().firstOrNull()?.split(' ')?.getOrNull(1)?.toIntOrNull()
+    require(status == 200) { "Key Server mengembalikan HTTP $status; pastikan Key Server aktif di TV." }
+    val headers = headerText.lineSequence().drop(1).mapNotNull { line ->
+        val colon = line.indexOf(':')
+        if (colon <= 0) null else line.substring(0, colon).trim().lowercase(Locale.US) to line.substring(colon + 1).trim()
+    }.toMap()
+    var body = raw.copyOfRange(headerEnd + separator.size, raw.size)
+    if (headers["transfer-encoding"]?.contains("chunked", ignoreCase = true) == true) {
+        body = decodeChunkedBody(body)
+    } else {
+        val expectedLength = headers["content-length"]?.toIntOrNull()
+        if (expectedLength != null) {
+            require(expectedLength in 1..128 * 1024 && body.size >= expectedLength) { "Respons key terpotong atau ukurannya tidak valid." }
+            body = body.copyOf(expectedLength)
+        }
+    }
+    require(body.isNotEmpty() && body.size <= 128 * 1024) { "Key Server tidak mengirim private key yang valid." }
+    val text = body.toString(Charsets.UTF_8).trim()
+    require(text.contains("PRIVATE KEY-----") && !text.trimStart().startsWith("<")) {
+        "Respons bukan private key PEM/OpenSSH. Pastikan alamat TV dan endpoint Key Server benar."
+    }
+    return text.toByteArray(Charsets.UTF_8)
+}
+
+private fun ByteArray.indexOfSequence(sequence: ByteArray): Int {
+    if (sequence.isEmpty() || size < sequence.size) return -1
+    for (start in 0..(size - sequence.size)) {
+        var match = true
+        for (offset in sequence.indices) {
+            if (this[start + offset] != sequence[offset]) {
+                match = false
+                break
+            }
+        }
+        if (match) return start
+    }
+    return -1
+}
+
+private fun decodeChunkedBody(chunked: ByteArray): ByteArray {
+    val input = ByteArrayInputStream(chunked)
+    val output = ByteArrayOutputStream()
+    fun readLine(): String {
+        val line = ByteArrayOutputStream()
+        var previous = -1
+        while (true) {
+            val current = input.read()
+            require(current >= 0) { "Respons chunked terpotong." }
+            if (previous == 13 && current == 10) {
+                val bytes = line.toByteArray()
+                return bytes.copyOf(maxOf(0, bytes.size - 1)).toString(Charsets.US_ASCII)
+            }
+            line.write(current)
+            previous = current
+            require(line.size() <= 128) { "Header chunked tidak valid." }
+        }
+    }
+    while (true) {
+        val size = readLine().substringBefore(';').trim().toIntOrNull(16)
+            ?: error("Ukuran chunk HTTP tidak valid.")
+        if (size == 0) break
+        require(size > 0 && output.size() + size <= 128 * 1024) { "Body key melebihi batas ukuran." }
+        val chunk = ByteArray(size)
+        var offset = 0
+        while (offset < size) {
+            val count = input.read(chunk, offset, size - offset)
+            require(count > 0) { "Chunk HTTP terpotong." }
+            offset += count
+        }
+        output.write(chunk)
+        require(input.read() == 13 && input.read() == 10) { "Delimiter chunk HTTP tidak valid." }
+    }
+    return output.toByteArray()
+}
