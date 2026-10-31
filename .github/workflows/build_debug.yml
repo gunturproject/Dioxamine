@@ -63,6 +63,7 @@ jobs:
       - name: Build ${{ matrix.variant }} APK
         if: matrix.variant == 'debug' || env.HAS_RELEASE_SIGNING == 'true'
         env:
+          RELEASE_STORE_TYPE: ${{ secrets.ANDROID_KEYSTORE_TYPE || 'JKS' }}
           RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}

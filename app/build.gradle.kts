@@ -26,6 +26,7 @@ android {
             val keystorePath = System.getenv("KEYSTORE_PATH")
             if (keystorePath != null) {
                 storeFile = rootProject.file(keystorePath)
+                storeType = System.getenv("RELEASE_STORE_TYPE") ?: "JKS"
                 storePassword = System.getenv("RELEASE_STORE_PASSWORD")
                 keyAlias = System.getenv("RELEASE_KEY_ALIAS")
                 keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
