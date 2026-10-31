@@ -450,7 +450,7 @@ private fun fetchWebOsPrivateKey(ipInput: String): ByteArray {
     val headerEnd = raw.indexOfSequence(separator)
     require(headerEnd in 1..8192) { "Respons Key Server tidak valid atau header terlalu besar." }
     val headerText = raw.copyOfRange(0, headerEnd).toString(Charsets.ISO_8859_1)
-    val status = headerText.lineSequence().firstOrNull()?.split(' ')?.getOrNull(1)?.toIntOrNull()
+    val status = headerText.lineSequence().firstOrNull()?.split(' ')?.getOrNull(1)?.toIntOrNull() ?: -1
     require(status == 200) { "Key Server mengembalikan HTTP $status; pastikan Key Server aktif di TV." }
     val headers = headerText.lineSequence().drop(1).mapNotNull { line ->
         val colon = line.indexOf(':')
