@@ -317,6 +317,7 @@ private data class ActionTileSpec(
 private val tileSpecs = listOf(
     ActionTileSpec(Icons.Filled.RestartAlt, R.string.fastboot_tile_reboot_title, R.string.fastboot_tile_reboot_desc, FastbootSubScreen.Reboot),
     ActionTileSpec(Icons.Filled.FileUpload, R.string.fastboot_tile_flash_title, R.string.fastboot_tile_flash_desc, FastbootSubScreen.FlashImage),
+    ActionTileSpec(Icons.Filled.Warning, R.string.fastboot_tile_vbmeta_title, R.string.fastboot_tile_vbmeta_desc, FastbootSubScreen.DisableVbmeta),
     ActionTileSpec(Icons.Filled.PlayCircle, R.string.fastboot_tile_boot_title, R.string.fastboot_tile_boot_desc, FastbootSubScreen.BootImage),
     ActionTileSpec(Icons.Filled.Lock, R.string.fastboot_tile_lock_title, R.string.fastboot_tile_lock_desc, FastbootSubScreen.LockState),
     ActionTileSpec(Icons.Filled.Info, R.string.fastboot_tile_vars_title, R.string.fastboot_tile_vars_desc, FastbootSubScreen.Variables),
@@ -367,6 +368,7 @@ fun FastbootActionsTab(vm: FastbootViewModel) {
                 when (screen) {
                     FastbootSubScreen.Reboot -> RebootScreen(vm, onBack)
                     FastbootSubScreen.FlashImage -> FlashImageScreen(vm, onBack)
+                    FastbootSubScreen.DisableVbmeta -> DisableVbmetaScreen(vm, onBack)
                     FastbootSubScreen.BootImage -> BootImageScreen(vm, onBack)
                     FastbootSubScreen.LockState -> LockStateScreen(vm, onBack)
                     FastbootSubScreen.Variables -> VariablesScreen(vm, onBack)

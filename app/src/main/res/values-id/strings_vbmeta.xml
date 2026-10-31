@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fastboot_tile_vbmeta_title">Nonaktifkan verifikasi vbmeta</string>
+    <string name="fastboot_tile_vbmeta_desc">Atur flag disable-verity dan disable-verification, lalu flash vbmeta.img</string>
+    <string name="fastboot_vbmeta_title">Nonaktifkan verifikasi vbmeta</string>
+    <string name="fastboot_vbmeta_warning_title">Peringatan keamanan</string>
+    <string name="fastboot_vbmeta_warning">Fitur ini menonaktifkan pemeriksaan Android Verified Boot pada image vbmeta yang di-flash. Image yang tidak cocok dapat membuat perangkat gagal boot atau membiarkan perubahan sistem yang tidak terverifikasi. Gunakan hanya vbmeta.img yang cocok dengan firmware perangkat Anda. Bootloader biasanya harus sudah terbuka; fitur ini tidak membuka bootloader. Simpan image firmware asli agar dapat dipulihkan.</string>
+    <string name="fastboot_vbmeta_desc">Pilih vbmeta.img mandiri. Dioxamine memvalidasi header AVB0, membuat salinan sementara yang diubah, lalu mem-flash salinan tersebut ke partisi vbmeta. File sumber pilihan Anda tidak diubah.</string>
+    <string name="fastboot_vbmeta_choose">Pilih vbmeta.img</string>
+    <string name="fastboot_vbmeta_validation">File harus berupa image AVB vbmeta mandiri yang valid dan ukurannya maksimal 64 MiB. Validasi dilakukan sebelum data apa pun di-flash.</string>
+    <string name="fastboot_vbmeta_flash_button">Tinjau dan flash vbmeta</string>
+    <string name="fastboot_vbmeta_confirm_title">Konfirmasi perubahan AVB</string>
+    <string name="fastboot_vbmeta_confirm_message">Dioxamine akan mengaktifkan kedua flag nonaktif AVB pada %1$s dan mem-flash salinannya yang telah diubah ke partisi vbmeta. Ini dapat mencegah perangkat boot normal dan mengurangi keamanan.</string>
+    <string name="fastboot_vbmeta_acknowledge">Saya memahami risiko keamanan dan boot serta memiliki image yang cocok dan rencana pemulihan.</string>
+    <string name="fastboot_vbmeta_confirm_button">Flash vbmeta sekarang</string>
+</resources>

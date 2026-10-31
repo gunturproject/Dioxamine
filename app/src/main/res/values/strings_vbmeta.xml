@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fastboot_tile_vbmeta_title">Disable vbmeta verification</string>
+    <string name="fastboot_tile_vbmeta_desc">Set disable-verity and disable-verification flags, then flash vbmeta.img</string>
+    <string name="fastboot_vbmeta_title">Disable vbmeta verification</string>
+    <string name="fastboot_vbmeta_warning_title">Security warning</string>
+    <string name="fastboot_vbmeta_warning">This disables Android Verified Boot checks for the flashed vbmeta image. A modified or incompatible image can make the device fail to boot or expose it to unverified system changes. Use only a vbmeta.img that matches your device firmware. The bootloader usually must already be unlocked; this feature does not unlock it. Keep the original firmware image so you can restore it.</string>
+    <string name="fastboot_vbmeta_desc">Choose a standalone vbmeta.img. Dioxamine validates the AVB0 header, creates a temporary patched copy, and flashes that copy to the vbmeta partition. Your selected source file is not modified.</string>
+    <string name="fastboot_vbmeta_choose">Choose vbmeta.img</string>
+    <string name="fastboot_vbmeta_validation">The file must be a valid standalone AVB vbmeta image and no larger than 64 MiB. Validation happens before any bytes are flashed.</string>
+    <string name="fastboot_vbmeta_flash_button">Review and flash vbmeta</string>
+    <string name="fastboot_vbmeta_confirm_title">Confirm AVB change</string>
+    <string name="fastboot_vbmeta_confirm_message">Dioxamine will set both AVB disable flags in %1$s and flash the patched copy to the vbmeta partition. This may prevent normal boot and weakens device security.</string>
+    <string name="fastboot_vbmeta_acknowledge">I understand the security and boot risks and have a matching image and recovery plan.</string>
+    <string name="fastboot_vbmeta_confirm_button">Flash vbmeta now</string>
+</resources>

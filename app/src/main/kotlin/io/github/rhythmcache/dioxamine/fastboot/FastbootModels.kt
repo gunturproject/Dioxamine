@@ -35,6 +35,7 @@ sealed class FastbootSubScreen {
     object TilesList : FastbootSubScreen()
     object Reboot : FastbootSubScreen()
     object FlashImage : FastbootSubScreen()
+    object DisableVbmeta : FastbootSubScreen()
     object BootImage : FastbootSubScreen()
     object LockState : FastbootSubScreen()
     object Variables : FastbootSubScreen()

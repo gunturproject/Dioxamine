@@ -35,6 +35,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 
@@ -405,6 +406,39 @@ class FastbootViewModel : ViewModel() {
             onProgress = onProgress,
             maxChunkSize = limit,
         ); null
+    }
+
+    fun flashVbmetaWithDisabledAvb(context: Context, uri: Uri, displayName: String) = run(
+        commandLabel = "fastboot --disable-verity --disable-verification flash vbmeta ${displayName.replace('\n', ' ')}",
+        opLabel = "Flashing vbmeta with AVB verification disabled",
+    ) { client, onInfo, onProgress ->
+        val (patchedFile, patchInfo) = withContext(Dispatchers.IO) {
+            val temp = File.createTempFile("dioxamine-vbmeta-", ".img", context.cacheDir)
+            try {
+                val info = context.contentResolver.openInputStream(uri)?.use { source ->
+                    FileOutputStream(temp).use { destination -> VbmetaImagePatcher.patch(source, destination) }
+                } ?: throw FastbootException.Io("Could not open selected vbmeta image")
+                temp to info
+            } catch (e: Exception) {
+                temp.delete()
+                throw e
+            }
+        }
+        try {
+            onInfo("AVB flags 0x${patchInfo.originalFlags.toUInt().toString(16).padStart(8, '0')} -> " +
+                "0x${patchInfo.patchedFlags.toUInt().toString(16).padStart(8, '0')}; " +
+                "${patchInfo.size} bytes staged in a private temporary copy.")
+            client.flash(
+                partition = "vbmeta",
+                file = patchedFile,
+                onInfo = onInfo,
+                onProgress = onProgress,
+                maxChunkSize = maxDownloadSize ?: FastbootClient.DEFAULT_CHUNK_SIZE,
+            )
+            null
+        } finally {
+            withContext(Dispatchers.IO) { patchedFile.delete() }
+        }
     }
 
     fun bootImage(fd: FileDescriptor, size: Long, displayName: String) = run(

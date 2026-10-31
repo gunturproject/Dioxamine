@@ -47,6 +47,7 @@ It focuses on:
 ### Fastboot flasher and bootloader tools (USB OTG)
 
 - [Flash partition images](https://rhythmcache.github.io/Dioxamine/book/user-guide/fastboot/flashing-images.html) (`boot`, `recovery`, `vendor_boot`, `system`, etc.)
+- Disable AVB verity and verification flags in a selected standalone `vbmeta.img` and flash it to `vbmeta` (validates AVB0 and preserves the original file; weakens verified boot and requires a compatible unlocked device)
 - [Live boot images](https://rhythmcache.github.io/Dioxamine/book/user-guide/fastboot/boot-image.html) (`fastboot boot <image>`) to test custom kernels or recoveries without flashing
 - [Unlock & lock bootloader](https://rhythmcache.github.io/Dioxamine/book/user-guide/fastboot/lock-bootloader.html) state directly from your phone
 - [Variable inspector](https://rhythmcache.github.io/Dioxamine/book/user-guide/fastboot/variables.html) (`getvar all`, check current slot A/B)
